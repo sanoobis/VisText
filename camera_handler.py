@@ -21,7 +21,8 @@ def capture_loop(input_type, source, get_width, get_density, is_grayscale, updat
         ascii_art = process_frame_diff(gray, get_width(), get_density())
 
         fps = 1.0 / (time.time() - last_time)
-        update_output(ascii_art, fps)
+        if ascii_art:
+            update_output(ascii_art, fps)
         last_time = time.time()
 
         time.sleep(1 / DEFAULTS["fps_cap"])
