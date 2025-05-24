@@ -23,6 +23,7 @@ VisText is a Python-based tool that converts live webcam, video, or image input 
 
 ```bash
 pip install opencv-python
+pip install pillow
 ```
 
 No additional libraries required — just standard `tkinter`, which comes with Python.
