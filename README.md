@@ -1,7 +1,6 @@
-
 # 🎥 VisText - Real-Time ASCII Visualizer
 
-VisText is a Python-based tool that converts live webcam, video, or image input into real-time ASCII art — displayed directly in your GUI. Built with OpenCV and Tkinter, it's lightweight, interactive, and fully customizable.
+VisText is a Python-based tool that converts live webcam, video, or image input into real-time ASCII art — displayed directly in your GUI or streamed to your browser. Built with OpenCV, Tkinter, and Flask, it's lightweight, interactive, and fully customizable.
 
 ---
 
@@ -9,13 +8,17 @@ VisText is a Python-based tool that converts live webcam, video, or image input 
 
 - 🔁 Live webcam or video-to-text visualization
 - 🖼 Convert images or videos to dynamic ASCII
+- ⚡ Motion-aware frame differencing (only updates on real visual change)
+- 🧪 CLI tool for converting image to `.txt`, `.html`, or `.png`
+- 🌐 Web-compatible: stream ASCII to browser with Flask
 - ⚙️ Real-time font zoom, quality, and resolution controls
 - 🔍 Fit-to-window rendering without losing detail
 - 🎛 Toggleable floating settings menu
-- 🎥 Mirrored webcam feed for natural preview
 - 🖱️ Drag-to-pan and scrollable ASCII output
 - 📈 FPS counter to track performance
+- 💾 Export frame as `.txt`, `.png`, `.html`
 - 🌗 Light/dark-ready interface
+- ⚙️ Fully configurable via `default_settings.py`
 
 ---
 
@@ -24,7 +27,7 @@ VisText is a Python-based tool that converts live webcam, video, or image input 
 ```bash
 pip install opencv-python
 pip install pillow
-pip install flask (optional if you want browser version)
+pip install flask
 ```
 
 No additional libraries required — just standard `tkinter`, which comes with Python.
@@ -33,14 +36,21 @@ No additional libraries required — just standard `tkinter`, which comes with P
 
 ## 🚀 How to Run
 
+### GUI Version
 ```bash
 python main.py
 ```
 
-### Available Modes:
-- **Webcam** – Launches webcam stream as ASCII
-- **Video** – Load and play any `.mp4`, `.avi`, etc.
-- **Image** – View any image as ASCII (JPG, PNG)
+### Web Version
+```bash
+python web_server.py
+# Then open http://localhost:5000 in your browser
+```
+
+### CLI Mode (Image to ASCII)
+```bash
+python cli.py -i path/to/image.jpg -o output --width 100 --export txt
+```
 
 ---
 
@@ -56,4 +66,4 @@ python main.py
 
 ---
 
-🖤 Enjoy turning visuals into text.
+🖤 Enjoy turning visuals into live text.
