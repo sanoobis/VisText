@@ -21,9 +21,30 @@ def frame_to_ascii(gray_frame):
     ascii_chars = ASCII_STYLE_PACKS.get(active_style, ASCII_STYLE_PACKS[DEFAULT_STYLE])
     ascii_rows = []
     for row in gray_frame:
-        line = ''.join(ascii_chars[int(pixel) * len(ascii_chars) // 256] for pixel in row)
+        line = ''.join(ascii_chars[int(px) * len(ascii_chars) // 256] for px in row)
         ascii_rows.append(line)
     return ascii_rows
+
+def frame_to_ascii_color(gray_frame, color_frame):
+    ascii_chars = ASCII_STYLE_PACKS.get(active_style, ASCII_STYLE_PACKS[DEFAULT_STYLE])
+    granularity = DEFAULTS["color_granularity"]
+    output = []
+
+    for y in range(gray_frame.shape[0]):
+        line = []
+        for x in range(gray_frame.shape[1]):
+            gray = gray_frame[y, x]
+            char = ascii_chars[int(gray) * len(ascii_chars) // 256]
+
+            b, g, r = color_frame[y, x]
+            r = (r // granularity) * granularity
+            g = (g // granularity) * granularity
+            b = (b // granularity) * granularity
+
+            hex_color = f"#{r:02x}{g:02x}{b:02x}"
+            line.append((char, hex_color))
+        output.append(line)
+    return output
 
 def process_frame_diff(current_gray, width, char_density,
                        diff_thresh=DEFAULTS["pixel_diff_threshold"],
@@ -46,7 +67,7 @@ def process_frame_diff(current_gray, width, char_density,
         previous_gray = resized_gray.copy()
         return "\n".join(frame_to_ascii(resized_gray))
     else:
-        return None  # skip update
+        return None
 
 def reset_ascii_state():
     global previous_gray

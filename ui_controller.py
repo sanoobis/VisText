@@ -1,7 +1,5 @@
 import tkinter as tk
 from tkinter import ttk
-import threading
-
 from config import GRAPHICS_LEVELS, ASCII_STYLE_PACKS
 from ascii_engine import set_ascii_style
 from export_tools import save_as_txt, save_as_png, save_as_html
@@ -9,8 +7,9 @@ from ui_state import init_state
 from ui_layout import build_output_area, build_settings_menu, build_main_controls
 from ui_bindings import bind_output_events
 from ui_logic import get_width, get_density, update_output
-from ui_runner import start_stream, stop_stream
+from ui_runner import start_stream, stop_stream, capture_once
 from default_settings import DEFAULTS
+import threading
 
 def setup_ui(root):
     init_state(root)
@@ -23,16 +22,12 @@ def setup_ui(root):
     main_frame = build_main_controls(menu_frame)
 
     bind_output_events(output_text, zoom_scale, zoom_mode_enabled)
-    set_ascii_style(style_var.get())  # Apply default style at startup
-    style_var.trace_add("write", lambda *args: set_ascii_style(style_var.get()))
-
-    def safe_update_output(art, fps):
-        if art:
-            update_output(output_text, fps_label_var, art, fps)
+    set_ascii_style(style_var.get())
 
     row = 0
     ttk.Label(main_frame, text="Input Type:", background="#eeeeee").grid(row=row, column=0, sticky="e")
-    ttk.Combobox(main_frame, textvariable=input_type_var, values=["Webcam", "Image", "Video"], width=20).grid(row=row, column=1)
+    input_box = ttk.Combobox(main_frame, textvariable=input_type_var, values=["Webcam", "Image", "Video"], width=20)
+    input_box.grid(row=row, column=1)
 
     row += 1
     ttk.Label(main_frame, text="File Path:", background="#eeeeee").grid(row=row, column=0, sticky="e")
@@ -53,7 +48,7 @@ def setup_ui(root):
 
     row += 1
     ttk.Label(main_frame, text="Color Mode:", background="#eeeeee").grid(row=row, column=0, sticky="e")
-    ttk.Combobox(main_frame, textvariable=color_mode, values=["none", "grayscale", "ansi"], width=20).grid(row=row, column=1)
+    ttk.Combobox(main_frame, textvariable=color_mode, values=["none", "grayscale", "ansi", "rgb"], width=20).grid(row=row, column=1)
 
     row += 1
     tk.Checkbutton(main_frame, text="Enable Zoom Mode", variable=zoom_mode_enabled, bg="#eeeeee").grid(row=row, column=0, columnspan=2, sticky="w")
@@ -66,22 +61,42 @@ def setup_ui(root):
     ttk.Label(main_frame, text="ASCII Style:", background="#eeeeee").grid(row=row, column=0, sticky="e")
     style_dropdown = ttk.Combobox(main_frame, textvariable=style_var, values=list(ASCII_STYLE_PACKS.keys()), width=20)
     style_dropdown.grid(row=row, column=1)
+    style_var.trace_add("write", lambda *args: set_ascii_style(style_var.get()))
+
+    # Actions
+    def get_w(): return get_width(output_text, zoom_scale, use_fit_to_window, width_entry)
+    def get_d(): return get_density(graphics_quality)
+    def update_fn(art, fps, is_rgb): update_output(output_text, fps_label_var, art, fps, is_rgb)
+
+    def on_start():
+        start_stream(stop_event, file_path, input_type_var, get_w, get_d, color_mode, output_text, fps_label_var, update_fn)
+
+    def on_stop():
+        stop_stream(stop_event)
+
+    def on_capture():
+        capture_once(file_path, input_type_var, get_w, get_d, color_mode, output_text, fps_label_var, update_fn)
 
     row += 1
-    ttk.Button(main_frame, text="Start", command=lambda: start_stream(
-        stop_event,
-        lambda: get_width(output_text, zoom_scale, use_fit_to_window, width_entry),
-        lambda: get_density(graphics_quality),
-        lambda: color_mode.get() == "grayscale",
-        safe_update_output,
-        file_path.get(),
-        input_type_var.get()
-    )).grid(row=row, column=0)
+    start_btn = ttk.Button(main_frame, text="Start", command=on_start)
+    capture_btn = ttk.Button(main_frame, text="Capture", command=on_capture)
+    stop_btn = ttk.Button(main_frame, text="Stop", command=on_stop)
 
-    ttk.Button(main_frame, text="Stop", command=lambda: stop_stream(stop_event)).grid(row=row, column=1)
+    start_btn.grid(row=row, column=0)
+    capture_btn.grid(row=row, column=1)
+    stop_btn.grid(row=row, column=2)
+
+    def toggle_capture_visibility(*_):
+        if input_type_var.get() == "Webcam":
+            capture_btn.grid()
+        else:
+            capture_btn.grid_remove()
+
+    input_type_var.trace_add("write", toggle_capture_visibility)
+    toggle_capture_visibility()  # run once on load
 
     row += 1
-    ttk.Label(main_frame, textvariable=fps_label_var, background="#eeeeee").grid(row=row, column=0, columnspan=2)
+    ttk.Label(main_frame, textvariable=fps_label_var, background="#eeeeee").grid(row=row, column=0, columnspan=3)
 
     row += 1
     ttk.Button(main_frame, text="Save as TXT", command=lambda: save_as_txt(output_text.get("1.0", tk.END))).grid(row=row, column=0)
