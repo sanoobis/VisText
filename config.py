@@ -1,4 +1,12 @@
-ASCII_CHARS = "@%#*+=-:. "
+ASCII_STYLE_PACKS = {
+    "Default": "@%#*+=-:. ",
+    "Light": ".:/",
+    "Dense": "@#%",
+    "Emoji": "😃😐😢",
+    "Block": "▓▒░"
+}
+
+DEFAULT_STYLE = "Default"
 
 GRAPHICS_LEVELS = {
     "Low (char_density 1)": 0.35,
