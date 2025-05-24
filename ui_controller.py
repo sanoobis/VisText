@@ -1,22 +1,21 @@
 import tkinter as tk
 from tkinter import ttk
 import threading
-from default_settings import DEFAULTS
-from config import ASCII_STYLE_PACKS, GRAPHICS_LEVELS
-from ascii_engine import set_ascii_style, process_frame
+
+from config import GRAPHICS_LEVELS, ASCII_STYLE_PACKS
+from ascii_engine import set_ascii_style
 from export_tools import save_as_txt, save_as_png, save_as_html
 from ui_state import init_state
 from ui_layout import build_output_area, build_settings_menu, build_main_controls
 from ui_bindings import bind_output_events
 from ui_logic import get_width, get_density, update_output
 from ui_runner import start_stream, stop_stream
+from default_settings import DEFAULTS
 
 def setup_ui(root):
     init_state(root)
     from ui_state import zoom_scale, use_fit_to_window, zoom_mode_enabled, graphics_quality
     from ui_state import color_mode, style_var, input_type_var, file_path, fps_label_var, menu_visible
-
-    set_ascii_style(style_var.get())
 
     stop_event = threading.Event()
     output_text = build_output_area(root, zoom_scale)
@@ -24,7 +23,12 @@ def setup_ui(root):
     main_frame = build_main_controls(menu_frame)
 
     bind_output_events(output_text, zoom_scale, zoom_mode_enabled)
+    set_ascii_style(style_var.get())  # Apply default style at startup
     style_var.trace_add("write", lambda *args: set_ascii_style(style_var.get()))
+
+    def safe_update_output(art, fps):
+        if art:
+            update_output(output_text, fps_label_var, art, fps)
 
     row = 0
     ttk.Label(main_frame, text="Input Type:", background="#eeeeee").grid(row=row, column=0, sticky="e")
@@ -69,7 +73,7 @@ def setup_ui(root):
         lambda: get_width(output_text, zoom_scale, use_fit_to_window, width_entry),
         lambda: get_density(graphics_quality),
         lambda: color_mode.get() == "grayscale",
-        lambda art, fps: update_output(output_text, fps_label_var, art, fps),
+        safe_update_output,
         file_path.get(),
         input_type_var.get()
     )).grid(row=row, column=0)
