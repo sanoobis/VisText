@@ -32,7 +32,7 @@ No additional libraries required — just standard `tkinter`, which comes with P
 ## 🚀 How to Run
 
 ```bash
-python VisText.py
+python main.py
 ```
 
 ### Available Modes:
