@@ -11,5 +11,9 @@ DEFAULTS = {
     "fps_cap": 20,
     "pixel_diff_threshold": 25,
     "update_percent": 0.07,
-    "color_granularity": 32  # RGB rounding factor (e.g. 32 = 8-bit per channel)
+    "color_granularity": 32,  # RGB rounding factor (e.g. 32 = 8-bit per channel)
+    "smooth_enabled": False,
+    "smooth_blur_radius": 3,
+    "smooth_ascii_mode": "Dense"
+
 }

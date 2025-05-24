@@ -63,6 +63,15 @@ def setup_ui(root):
     style_dropdown.grid(row=row, column=1)
     style_var.trace_add("write", lambda *args: set_ascii_style(style_var.get()))
 
+    row += 1
+    # Smooth toggle
+    smooth_enabled = tk.BooleanVar(value=DEFAULTS["smooth_enabled"])
+    def toggle_smooth():
+        DEFAULTS["smooth_enabled"] = smooth_enabled.get()
+
+    tk.Checkbutton(main_frame, text="Smooth (blur + dense)", variable=smooth_enabled,
+                   command=toggle_smooth, bg="#eeeeee").grid(row=row, column=0, columnspan=2, sticky="w")
+
     # Actions
     def get_w(): return get_width(output_text, zoom_scale, use_fit_to_window, width_entry)
     def get_d(): return get_density(graphics_quality)
@@ -93,7 +102,7 @@ def setup_ui(root):
             capture_btn.grid_remove()
 
     input_type_var.trace_add("write", toggle_capture_visibility)
-    toggle_capture_visibility()  # run once on load
+    toggle_capture_visibility()
 
     row += 1
     ttk.Label(main_frame, textvariable=fps_label_var, background="#eeeeee").grid(row=row, column=0, columnspan=3)

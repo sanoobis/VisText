@@ -17,16 +17,27 @@ def resize_frame(frame, new_width, char_density):
     new_height = int(aspect_ratio * new_width * char_density)
     return cv2.resize(frame, (new_width, new_height))
 
+def maybe_blur(frame):
+    if DEFAULTS["smooth_enabled"]:
+        radius = DEFAULTS.get("smooth_blur_radius", 3)
+        return cv2.GaussianBlur(frame, (radius | 1, radius | 1), 0)
+    return frame
+
+def get_smooth_ascii_chars():
+    if DEFAULTS["smooth_enabled"]:
+        smooth_style = DEFAULTS.get("smooth_ascii_mode", "Dense")
+        return ASCII_STYLE_PACKS.get(smooth_style, ASCII_STYLE_PACKS[DEFAULT_STYLE])
+    return ASCII_STYLE_PACKS.get(active_style, ASCII_STYLE_PACKS[DEFAULT_STYLE])
+
 def frame_to_ascii(gray_frame):
-    ascii_chars = ASCII_STYLE_PACKS.get(active_style, ASCII_STYLE_PACKS[DEFAULT_STYLE])
-    ascii_rows = []
-    for row in gray_frame:
-        line = ''.join(ascii_chars[int(px) * len(ascii_chars) // 256] for px in row)
-        ascii_rows.append(line)
-    return ascii_rows
+    ascii_chars = get_smooth_ascii_chars()
+    return [
+        ''.join(ascii_chars[int(px) * len(ascii_chars) // 256] for px in row)
+        for row in gray_frame
+    ]
 
 def frame_to_ascii_color(gray_frame, color_frame):
-    ascii_chars = ASCII_STYLE_PACKS.get(active_style, ASCII_STYLE_PACKS[DEFAULT_STYLE])
+    ascii_chars = get_smooth_ascii_chars()
     granularity = DEFAULTS["color_granularity"]
     output = []
 
@@ -51,7 +62,8 @@ def process_frame_diff(current_gray, width, char_density,
                        update_percent=DEFAULTS["update_percent"]):
     global previous_gray
 
-    resized_gray = resize_frame(current_gray, width, char_density)
+    blurred = maybe_blur(current_gray)
+    resized_gray = resize_frame(blurred, width, char_density)
     h, w = resized_gray.shape
 
     if previous_gray is None or previous_gray.shape != resized_gray.shape:
