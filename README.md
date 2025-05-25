@@ -66,4 +66,4 @@ python cli.py -i path/to/image.jpg -o output --width 100 --export txt
 
 ---
 
-🖤 Enjoy turning visuals into live text.
+Enjoy turning visuals into live text.
